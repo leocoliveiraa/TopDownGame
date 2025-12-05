@@ -23,6 +23,10 @@ packages/
 
 # MonoGame
 *.mgcb.bak
+Content/obj/
+
+# dotnet tools (opcional)
+.config/
 
 # OS
 .DS_Store
