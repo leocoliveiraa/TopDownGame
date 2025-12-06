@@ -29,6 +29,20 @@ namespace TopDownGame.Graphics
             _currentFrame = 0;
         }
 
+        // Construtor alternativo para especificar largura do frame manualmente
+        public Animation(Texture2D spriteSheet, int frameCount, int frameWidth, int frameHeight, float frameTime, bool isLooping = true)
+        {
+            SpriteSheet = spriteSheet;
+            FrameCount = frameCount;
+            FrameWidth = frameWidth;
+            FrameHeight = frameHeight;
+            FrameTime = frameTime;
+            IsLooping = isLooping;
+            
+            _timer = 0f;
+            _currentFrame = 0;
+        }
+
         public void Update(GameTime gameTime)
         {
             _timer += (float)gameTime.ElapsedGameTime.TotalSeconds;

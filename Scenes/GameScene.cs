@@ -15,6 +15,7 @@ namespace TopDownGame.Scenes
         private GraphicsDevice _graphicsDevice;
         
         private Player _player;
+        private List<Enemy> _enemies;
         private Tilemap _tilemap;
         private Camera2D _camera;
 
@@ -43,6 +44,21 @@ namespace TopDownGame.Scenes
 
             _player = new Player(animations, new Vector2(100, 100));
 
+            // Carrega animação do Skeleton
+            Texture2D skeletonIdleTexture = _content.Load<Texture2D>("Sprites/Skeleton Idle");
+            
+            // Skeleton Idle: 264x32, testando com 11 frames de 24x32 pixels cada
+            var skeletonAnimations = new Dictionary<string, Animation>
+            {
+                { "idle", new Animation(skeletonIdleTexture, 11, 24, 32, 0.12f, true) }
+            };
+
+            // Cria lista de inimigos com um esqueleto
+            _enemies = new List<Enemy>
+            {
+                new Enemy(skeletonAnimations, new Vector2(400, 200), 2f)
+            };
+
             _camera = new Camera2D(_graphicsDevice.Viewport);
         }
 
@@ -50,6 +66,12 @@ namespace TopDownGame.Scenes
         {
             _player.HandleInput(input, gameTime, _tilemap);
             _player.Update(gameTime);
+            
+            // Atualiza inimigos
+            foreach (var enemy in _enemies)
+            {
+                enemy.Update(gameTime);
+            }
             
             // Câmera fixa por enquanto para ver o player se movendo
             // _camera.Follow(_player.Position);
@@ -69,6 +91,12 @@ namespace TopDownGame.Scenes
 
             // _tilemap.Draw(spriteBatch); // Desativado por enquanto
             _player.Draw(spriteBatch);
+            
+            // Desenha inimigos
+            foreach (var enemy in _enemies)
+            {
+                enemy.Draw(spriteBatch);
+            }
 
             spriteBatch.End();
         }
