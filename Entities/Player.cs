@@ -3,102 +3,114 @@ using Microsoft.Xna.Framework.Graphics;
 using TopDownGame.Input;
 using TopDownGame.Utils;
 using TopDownGame.Maps;
+using TopDownGame.Graphics;
+using System.Collections.Generic;
 
 namespace TopDownGame.Entities
 {
     public class Player : Entity
     {
-        private Texture2D _texture;
-        private float _maxSpeed = Constants.PLAYER_SPEED;
-        private float _acceleration = 800f;
-        private float _friction = 600f;
-        private Vector2 _velocity;
-        private Vector2 _direction;
+        private Dictionary<string, Animation> _animations;
+        private Animation _currentAnimation;
+        private string _currentAnimationName;
+        private float _speed = Constants.PLAYER_SPEED;
+        private Vector2 _lastMovement;
+        private float _scale = 3f; // Escala para aumentar o tamanho do personagem
 
-        public Player(Texture2D texture, Vector2 startPosition)
+        public Player(Dictionary<string, Animation> animations, Vector2 startPosition)
         {
-            _texture = texture;
+            _animations = animations;
             Position = startPosition;
-            _velocity = Vector2.Zero;
-            UpdateBounds(Constants.PLAYER_SIZE, Constants.PLAYER_SIZE);
+            
+            // Define animação inicial como Idle
+            SetAnimation("idle");
+            
+            // Define o tamanho do player baseado no primeiro frame da animação com escala
+            if (_currentAnimation != null)
+            {
+                UpdateBounds((int)(_currentAnimation.FrameWidth * _scale), 
+                            (int)(_currentAnimation.FrameHeight * _scale));
+            }
+        }
+
+        private void SetAnimation(string animationName)
+        {
+            if (_animations.ContainsKey(animationName) && _currentAnimationName != animationName)
+            {
+                _currentAnimationName = animationName;
+                _currentAnimation = _animations[animationName];
+                _currentAnimation.Reset();
+            }
         }
 
         public override void Update(GameTime gameTime)
         {
+            _currentAnimation?.Update(gameTime);
         }
 
         public void HandleInput(InputManager input, GameTime gameTime, Tilemap tilemap)
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            Vector2 inputDirection = input.GetMovementInput();
+            Vector2 movement = input.GetMovementInput();
             
-            if (inputDirection != Vector2.Zero)
+            if (movement != Vector2.Zero)
             {
-                _direction = inputDirection;
+                _lastMovement = movement;
+                Vector2 desiredPosition = Position + movement * _speed * deltaTime;
                 
-                // Acelera na direção do input
-                _velocity += inputDirection * _acceleration * deltaTime;
-                
-                // Limita a velocidade máxima
-                if (_velocity.Length() > _maxSpeed)
-                {
-                    _velocity.Normalize();
-                    _velocity *= _maxSpeed;
-                }
-            }
-            else
-            {
-                // Aplica fricção quando não há input
-                if (_velocity.Length() > 0)
-                {
-                    float frictionAmount = _friction * deltaTime;
-                    if (_velocity.Length() <= frictionAmount)
-                    {
-                        _velocity = Vector2.Zero;
-                    }
-                    else
-                    {
-                        Vector2 frictionDir = _velocity;
-                        frictionDir.Normalize();
-                        _velocity -= frictionDir * frictionAmount;
-                    }
-                }
-            }
-
-            // Aplica movimento se houver velocidade
-            if (_velocity != Vector2.Zero)
-            {
-                Vector2 desiredPosition = Position + _velocity * deltaTime;
-                
+                // Tenta mover nos dois eixos
                 if (!tilemap.CheckCollision(desiredPosition, Bounds.Width, Bounds.Height))
                 {
                     Position = desiredPosition;
-                    UpdateBounds(Constants.PLAYER_SIZE, Constants.PLAYER_SIZE);
                 }
                 else
                 {
-                    _velocity = Vector2.Zero; // Para ao colidir
+                    // Se não conseguir, tenta mover só em X
+                    Vector2 moveX = new Vector2(Position.X + movement.X * _speed * deltaTime, Position.Y);
+                    if (!tilemap.CheckCollision(moveX, Bounds.Width, Bounds.Height))
+                    {
+                        Position = moveX;
+                    }
+                    
+                    // Tenta mover só em Y
+                    Vector2 moveY = new Vector2(Position.X, Position.Y + movement.Y * _speed * deltaTime);
+                    if (!tilemap.CheckCollision(moveY, Bounds.Width, Bounds.Height))
+                    {
+                        Position = moveY;
+                    }
                 }
+                
+                UpdateBounds((int)(_currentAnimation.FrameWidth * _scale), 
+                            (int)(_currentAnimation.FrameHeight * _scale));
+                SetAnimation("walk");
             }
-        }
-
-        // Placeholder para futuras animações
-        private void UpdateAnimation()
-        {
-            // TODO: Implementar animações
+            else
+            {
+                SetAnimation("idle");
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (_currentAnimation == null) return;
+
+            SpriteEffects flip = SpriteEffects.None;
+            
+            // Inverte o sprite se estiver movendo para a esquerda
+            if (_lastMovement.X < 0)
+            {
+                flip = SpriteEffects.FlipHorizontally;
+            }
+
             spriteBatch.Draw(
-                _texture,
+                _currentAnimation.SpriteSheet,
                 Position,
-                null,
+                _currentAnimation.GetCurrentFrameRectangle(),
                 Color.White,
                 0f,
                 Vector2.Zero,
-                1f,
-                SpriteEffects.None,
+                _scale,
+                flip,
                 Constants.LAYER_ENTITIES
             );
         }

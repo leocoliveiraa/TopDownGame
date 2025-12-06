@@ -5,6 +5,7 @@ using TopDownGame.Entities;
 using TopDownGame.Graphics;
 using TopDownGame.Input;
 using TopDownGame.Maps;
+using System.Collections.Generic;
 
 namespace TopDownGame.Scenes
 {
@@ -27,8 +28,20 @@ namespace TopDownGame.Scenes
         {
             _tilemap = new Tilemap(_content, _graphicsDevice);
 
-            Texture2D playerTexture = CreatePlaceholderTexture(32, 32, Color.Red);
-            _player = new Player(playerTexture, new Vector2(0, 0));
+            // Carrega as texturas de animação do Soldier
+            Texture2D idleTexture = _content.Load<Texture2D>("Sprites/Soldier-Idle");
+            Texture2D walkTexture = _content.Load<Texture2D>("Sprites/Soldier-Walk");
+
+            // Cria as animações
+            // Idle: 600x100 = 6 frames de 100x100
+            // Walk: 800x100 = 8 frames de 100x100
+            var animations = new Dictionary<string, Animation>
+            {
+                { "idle", new Animation(idleTexture, 6, 0.12f, true) },
+                { "walk", new Animation(walkTexture, 8, 0.08f, true) }
+            };
+
+            _player = new Player(animations, new Vector2(100, 100));
 
             _camera = new Camera2D(_graphicsDevice.Viewport);
         }

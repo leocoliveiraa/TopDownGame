@@ -10,6 +10,7 @@ x86/
 .vs/
 *.user
 *.suo
+*.cache
 
 # Rider
 .idea/
@@ -25,9 +26,11 @@ packages/
 *.mgcb.bak
 Content/obj/
 
-# dotnet tools (opcional)
+# dotnet
 .config/
+*.log
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini

@@ -66,18 +66,12 @@ namespace TopDownGame.Maps
 
         public bool CheckCollision(Vector2 position, int width, int height)
         {
-            int left = (int)position.X / Constants.TILE_SIZE;
-            int right = (int)(position.X + width - 1) / Constants.TILE_SIZE;
-            int top = (int)position.Y / Constants.TILE_SIZE;
-            int bottom = (int)(position.Y + height - 1) / Constants.TILE_SIZE;
-
-            if (left < 0 || right >= Width || top < 0 || bottom >= Height)
+            // Só verifica se está dentro dos limites da tela
+            if (position.X < 0 || position.X + width > Constants.SCREEN_WIDTH ||
+                position.Y < 0 || position.Y + height > Constants.SCREEN_HEIGHT)
                 return true;
 
-            return _tileSet[_tiles[left, top]].IsSolid ||
-                   _tileSet[_tiles[right, top]].IsSolid ||
-                   _tileSet[_tiles[left, bottom]].IsSolid ||
-                   _tileSet[_tiles[right, bottom]].IsSolid;
+            return false;
         }
 
         public void Draw(SpriteBatch spriteBatch)

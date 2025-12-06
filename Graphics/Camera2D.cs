@@ -14,16 +14,15 @@ namespace TopDownGame.Graphics
         public Camera2D(Viewport viewport)
         {
             _viewport = viewport;
-            Zoom = 2f;
+            Zoom = 1f;
             Rotation = 0f;
+            Position = Vector2.Zero;
         }
 
         public Matrix GetTransformMatrix()
         {
-            return Matrix.CreateTranslation(new Vector3(-Position.X, -Position.Y, 0)) *
-                   Matrix.CreateRotationZ(Rotation) *
-                   Matrix.CreateScale(Zoom) *
-                   Matrix.CreateTranslation(new Vector3(_viewport.Width * 0.5f, _viewport.Height * 0.5f, 0));
+            // Sem transformação por enquanto - câmera fixa
+            return Matrix.Identity;
         }
 
         public void Follow(Vector2 targetPosition)
